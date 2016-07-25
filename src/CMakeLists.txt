@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+project(road_quality_test)
+
+find_package(PCL 1.7 REQUIRED)
+
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+include_directories(./include)
+
+
+#add_executable (road_quality road_quality.cpp)
+#target_link_libraries (road_quality ${PCL_LIBRARIES})
+
+#add_executable (generate_prm generate_prm.cpp)
+#target_link_libraries (generate_prm ${PCL_LIBRARIES})
+
+#add_executable (road_quality_2 road_quality_2.cpp)
+#target_link_libraries (road_quality_2 ${PCL_LIBRARIES})
+
+#add_executable (road_detection road_detection.cpp)
+#target_link_libraries (road_detection ${PCL_LIBRARIES})
+
+#add_executable (region_growing_segmentation region_growing_segmentation.cpp)
+#target_link_libraries (region_growing_segmentation ${PCL_LIBRARIES})
+
+#add_executable (get_sensors_data get_sensors_data.cpp)
+#target_link_libraries (get_sensors_data ${PCL_LIBRARIES})
+
+add_executable (rti_compare rti_compare.cpp)
+target_link_libraries (rti_compare ${PCL_LIBRARIES})
+
+add_executable (safe_prt safe_prt.cpp)
+target_link_libraries (safe_prt ${PCL_LIBRARIES})
+
+add_executable (safe_rrt safe_rrt.cpp)
+target_link_libraries (safe_rrt ${PCL_LIBRARIES})
+
+add_executable (safe_paths safe_paths.cpp)
+target_link_libraries (safe_paths ${PCL_LIBRARIES})
+
+add_executable (RTI RTI.cpp)
+target_link_libraries (RTI ${PCL_LIBRARIES})
+
+add_executable (test test.cpp)
+target_link_libraries (test ${PCL_LIBRARIES})
+
+add_executable (RTI_test RTI_test.cpp)
+target_link_libraries (RTI_test ${PCL_LIBRARIES})
+
+add_executable (RTI_test2 RTI_test2.cpp)
+target_link_libraries (RTI_test2 ${PCL_LIBRARIES})
+
+add_executable (obstacle_on_road obstacle_on_road.cpp)
+target_link_libraries (obstacle_on_road ${PCL_LIBRARIES})
+
+add_executable (dem_test dem_test.cpp)
+target_link_libraries (dem_test ${PCL_LIBRARIES})
+
+#add_executable (road_segment road_segment.cpp)
+#target_link_libraries (road_segment ${PCL_LIBRARIES})
