@@ -20,16 +20,25 @@ int main(int argc, char *argv[])
 
 	std::clock_t    start;
 
-	std::string pointcloudFolder = "/home/khan/phd_ws/traversability/pointclouds/safe_roads/";
-	std::string adjFolder = "/home/khan/phd_ws/traversability/adjacency/safe_roads/rand/";
-	std::string configFolder = "/home/khan/phd_ws/traversability/configs/safe_roads/rand/";
+    std::string pointcloudFolder = "/home/mudassir/phd_ws/traversability/pointclouds/clearance_roads/";
+
 	std::string fileStartName = ".pcd";
 
 	for (int i_counter = 1; i_counter<=10; i_counter++)
 	{
-				std::cout << endl<<"reading nominal road file road_long1.pcd -------------------------------------\t"<< std::endl;
+        std::stringstream adjFolderStream;
+        adjFolderStream << "/home/mudassir/phd_ws/traversability/adjacency/clearance_roads/rand_01_" << i_counter << "/";
+        std::string adjFolder = adjFolderStream.str().c_str();
+        //adjFolder.append(std::to_string(i_counter));
+       // adjFolder.append("/");
+        std::stringstream configFolderStream;
+        configFolderStream << "/home/mudassir/phd_ws/traversability/configs/clearance_roads/rand_01_" << i_counter << "/";
+        std::string configFolder = configFolderStream.str().c_str();
+         //configFolder.append(std::to_string(i_counter));
+        //configFolder.append("/");
+                std::cout << endl<<"reading nominal road file road_clear1.pcd -------------------------------------\t"<< std::endl;
 				std::stringstream readBaseFile;
-				readBaseFile << pointcloudFolder.c_str() <<"road_safe1.pcd";
+                readBaseFile << pointcloudFolder.c_str() <<"road_clear1.pcd";
 				pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_base (new pcl::PointCloud<pcl::PointXYZ>);
 				reader.read (readBaseFile.str(), *cloud_base);
 		
@@ -175,7 +184,56 @@ int main(int argc, char *argv[])
 					if(fileProcessed) {
 						continue;
 					}
+                    /*
+                     * reading obstacle file
+                     */
+                    Eigen::MatrixXf obstacles_info_tmp = Eigen::MatrixXf::Constant(1000,4,-1000);
+                    Eigen::MatrixXf obstacles_info;
+                    std::stringstream readObstaclesInfoFile;
+                    readObstaclesInfoFile << pointcloudFolder.c_str() << fName.substr(0,fName.find(".pcd")) << "_obs";
+                    std::cout <<"file name:\t" << readObstaclesInfoFile.str() << std::endl;
+                    std::ifstream obsFile (readObstaclesInfoFile.str().c_str());
+                    if (obsFile.is_open())
+                    {
 
+                        //cout<< "writing data to road_"<<fileIdx<<endl;
+                        int c_id = 0;
+                        while (!obsFile.eof())
+                        {
+                            std::string line;
+                            std::getline (obsFile,line);
+                            if(line.size()==0)
+                            {
+                                break;
+                            }
+                            std::size_t nospace1 = line.find_first_not_of(" ");
+                            std::size_t space1 = line.find(" ",nospace1);
+                            std::size_t nospace2 = line.find_first_not_of(" ",space1);
+                            std::size_t space2 = line.find(" ",nospace2);
+                            std::size_t nospace3 = line.find_first_not_of(" ",space2);
+                            std::size_t space3 = line.find(" ",nospace3);
+                            std::size_t nospace4 = line.find_first_not_of(" ",space3);
+                            std::size_t space4 = line.find(" ",nospace4);
+
+                            std::string xStr = line.substr(nospace1,space1-1);
+                            std::string yStr = line.substr(nospace2,space2-1);
+                            std::string rStr = line.substr(nospace3,space3-1);
+                            std::string sStr = line.substr(nospace4,space4-1);
+                            float xVal = std::atof(xStr.c_str());
+                            float yVal = std::atof(yStr.c_str());
+                            float rVal = std::atof(rStr.c_str());
+                            float sVal = std::atof(sStr.c_str());
+                           // std::cout <<c_id << ":\t line:	" << line <<"\t," << space1 <<"," << space2 <<"," << space3 << std::endl;
+
+                            obstacles_info_tmp.row(c_id) = Eigen::Vector4f(xVal,yVal,rVal,sVal);
+                            c_id++;
+                            //std::cout <<c_id << ":\t" << xVal <<"," << yVal <<"," << rVal <<"," << sVal << std::endl;
+
+                        }
+                        obsFile.close();
+                        obstacles_info = obstacles_info_tmp.topRows(c_id);
+                    }
+                    std::cout << obstacles_info.rows() <<" obstacles found.\n" << obstacles_info << std::endl;
 					//				double cpu1  = get_cpu_time();
 					std::cout << endl<<"reading file -------------------------------------\t"<<fName.c_str() << std::endl;
 					std::stringstream readFile;
@@ -199,6 +257,7 @@ int main(int argc, char *argv[])
 					prtObj.SetProjectedPlaneCoefficients(proj_plane_coefficients);
 					prtObj.setImportConfigsFlag(true);
 					prtObj.setConfigurations(vehicle_configs_import);
+                    prtObj.setObstaclesInfo(obstacles_info);
 					prtObj.computePRT();
 					std::vector< std::pair<int,int> > prt_graph;
 					prtObj.getPRTAdjacencyList(prt_graph);
@@ -211,7 +270,7 @@ int main(int argc, char *argv[])
 					 * save adjacency
 					 */
 					std::stringstream saveAdj;
-					saveAdj << adjFolder.c_str() << fName.substr(0,fName.find(".pcd"))  << "_" << i_counter <<"_adj";
+                    saveAdj << adjFolder.c_str() << fName.substr(0,fName.find(".pcd")) <<"_adj";
 					std::ofstream saveAdjFile(saveAdj.str().c_str());
 					if (saveAdjFile.is_open())
 					{
@@ -222,6 +281,8 @@ int main(int argc, char *argv[])
 						saveAdjFile.close();
 					}else {
 						std::cout<<"Error: can not find directory"<<std::endl;
+                        std::cout << adjFolder.c_str() << std::endl;
+                         exit(0);
 					}
 
 					/*
@@ -232,7 +293,7 @@ int main(int argc, char *argv[])
 					std::vector<float> config_clearance = prtObj.getConfigurationsClearance();
 
 					std::stringstream saveConfigs;
-					saveConfigs << configFolder.c_str() << fName.substr(0,fName.find(".pcd")) << "_" << i_counter <<"_conf";
+                    saveConfigs << configFolder.c_str() << fName.substr(0,fName.find(".pcd")) <<"_conf";
 					std::ofstream saveConfigsFile(saveConfigs.str().c_str());
 					if (saveConfigsFile.is_open())
 					{
@@ -243,6 +304,7 @@ int main(int argc, char *argv[])
 						saveConfigsFile.close();
 					}else {
 						std::cout<<"Error: can not find directory"<<std::endl;
+                         exit(0);
 					}
 					std::cout << "file written successfully" << endl<< std::endl;
 					//pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = prtObj.getDEMVisibilityCloud ();
