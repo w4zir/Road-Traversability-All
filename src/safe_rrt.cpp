@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 				}
 
 //				double cpu1  = get_cpu_time();
-				std::cout << endl<<"reading file -------------------------------------\t"<<fName.c_str() << std::endl;
+                std::cout << endl<<"reading pointcloud file -------------------------------------\t"<<fName.c_str() << std::endl;
 				std::stringstream readFile;
 				readFile << pointcloudFolder.c_str() <<fName.substr(0,fName.find(".pcd")) << ".pcd";
 				pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
 				pcl::RRT<pcl::PointXYZ> rrtObj;
 				rrtObj.setInputCloud(cloud_in);
 				rrtObj.SetProjectedPlaneCoefficients(proj_plane_coefficients);
+                rrtObj.setObstaclesInfo(obstacle_info);
 				rrtObj.computeRRT();
 
 				std::vector< std::pair<int,int> > rrt_graph;
